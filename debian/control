@@ -1,0 +1,12 @@
+Source: sio-exporter
+Section: utils
+Priority: optional
+Maintainer: Lachezar Bogdanov <lachezar.bogdanov@hostwaycorp.com>
+Build-Depends: debhelper (>= 9)
+Standards-Version: 3.9.8
+
+Package: sio-exporter
+Architecture: any
+Section: utils
+Priority: optional
+Description: Provides sio metrics in prometheus format for node-exporter

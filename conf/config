@@ -1,0 +1,6 @@
+# API url with https
+url: https://master01-stg.sio.tampa.hostway:443/api/v1
+# SIO API token
+token: some_token 
+# Prometheus text file where we want to output to
+file: sio.prom

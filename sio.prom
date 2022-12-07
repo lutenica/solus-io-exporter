@@ -1,0 +1,15 @@
+# HELP sio_compute_resources Total CRs connected to master
+# TYPE sio_compute_resources gauge
+sio_compute_resources 2
+# HELP sio_vm_servers Total VMs connected to master
+# TYPE sio_vm_servers gauge
+sio_vm_servers 11
+# HELP sio_pending_tasks Tasks pending
+# TYPE sio_pending_tasks gauge
+sio_pending_tasks 0
+# HELP sio_failed_tasks Failed tasks
+# TYPE sio_failed_tasks gauge
+sio_failed_tasks 50
+# HELP sio_upgrades_pending Pending upgrades
+# TYPE sio_upgrades_pending gauge
+sio_upgrades_pending 0

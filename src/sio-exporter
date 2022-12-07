@@ -1,0 +1,137 @@
+#!/usr/bin/env python3
+import argparse
+import requests
+import sys
+
+requests.packages.urllib3.disable_warnings()
+
+arg_parser = argparse.ArgumentParser(description='Prometheus textfile generator for SIO')
+arg_parser.add_argument("-c", "--config", help="Path to config file, defaults to /etc/default/sio-exporter",
+                        default='/etc/default/sio-exporter', type=str)
+args = arg_parser.parse_args()
+conf_file = args.config
+
+url = ""
+token = ""
+file = ""
+
+try:
+    with open(conf_file, "r") as file:
+        for line in file:
+            if "url" in line:
+                url = line.strip()
+                url = url.split(" ")[1]
+
+            if "token" in line:
+                token = line.strip()
+                token = token.split(" ")[1]
+
+            if "file" in line:
+                prom_file = line.strip()
+                prom_file = prom_file.split(" ")[1]
+
+except IOError as e:
+    sys.exit(f"Issues with config file:\n {e}")
+
+if not url or not token or not file:
+    sys.exit(f"{conf_file} did not contain either url, token or file values")
+
+headers = {
+    "Authorization": f"Bearer {token}"
+}
+
+def get_crs():
+    """
+    Retrieve the number of compute resources
+    :return: number of compute resources
+    """
+    global headers
+    global url
+    _url = f"{url}/compute_resources"
+    response = requests.get(_url, headers=headers, verify=False)
+    response.raise_for_status()
+    data = response.json()
+    return len(data["data"])
+
+
+def get_servers():
+    """
+    Retrieve the number of servers
+    :return: number of servers
+    """
+    global headers
+    global url
+    _url = f"{url}/servers"
+    response = requests.get(_url, headers=headers, verify=False)
+    response.raise_for_status()
+    data = response.json()
+    return len(data["data"])
+
+
+def get_tasks(kind):
+    """
+    Get number of tasks
+    :param kind: Kind of task we are checking for (pending, failed, etc)
+    :return: Count of tasks of the specific type
+    """
+    global headers
+    global url
+    _url = f"{url}/tasks?filter[status]={kind}"
+    response = requests.get(_url, headers=headers, verify=False)
+    response.raise_for_status()
+    data = response.json()
+    return len(data["data"])
+
+
+def upgrades_pending():
+    """
+    Check if there are pending upgrades
+    :return: Returns True/False if there are pending upgrades or not.
+    """
+    global headers
+    global url
+    _url = f"{url}/updates"
+    response = requests.get(_url, headers=headers, verify=False)
+    response.raise_for_status()
+    data = response.json()
+    if data["data"]["status"] != "up to date":
+        pending = True
+    else:
+        pending = False
+
+    return pending
+
+
+crs = get_crs()
+servers = get_servers()
+pending_tasks = get_tasks("pending")
+failed_tasks = get_tasks("failed")
+
+if upgrades_pending():
+    upgrades = 1
+else:
+    upgrades = 0
+
+payload = \
+    "# HELP sio_compute_resources Total CRs connected to master"\
+    "\n# TYPE sio_compute_resources gauge"\
+    f"\nsio_compute_resources {crs}"\
+    "\n# HELP sio_vm_servers Total VMs connected to master"\
+    "\n# TYPE sio_vm_servers gauge"\
+    f"\nsio_vm_servers {servers}"\
+    "\n# HELP sio_pending_tasks Tasks pending"\
+    "\n# TYPE sio_pending_tasks gauge"\
+    f"\nsio_pending_tasks {pending_tasks}" \
+    "\n# HELP sio_failed_tasks Failed tasks" \
+    "\n# TYPE sio_failed_tasks gauge" \
+    f"\nsio_failed_tasks {failed_tasks}" \
+    "\n# HELP sio_upgrades_pending Pending upgrades" \
+    "\n# TYPE sio_upgrades_pending gauge" \
+    f"\nsio_upgrades_pending {upgrades}" \
+ \
+
+try:
+    with open(prom_file, "w") as file:
+        file.write(payload)
+except IOError as err:
+    sys.exit(f"Can't write the file due to os issues: {err}")
