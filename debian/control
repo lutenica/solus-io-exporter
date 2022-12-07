@@ -1,7 +1,7 @@
 Source: sio-exporter
 Section: utils
 Priority: optional
-Maintainer: Lachezar Bogdanov <lachezar.bogdanov@hostwaycorp.com>
+Maintainer: Lachezar Bogdanov <lachezar.l.bogdanov@gmail.com>
 Build-Depends: debhelper (>= 9)
 Standards-Version: 3.9.8
 
