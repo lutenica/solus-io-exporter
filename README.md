@@ -2,10 +2,11 @@
 
 ## General info:
 
- This is not an exporter per se, though it may become one some day.
+ This is not an exporter per se, though it may become one some day. 
 For now it is a script that is intended to obtain some basic info from Solus IO and
-plugs into node-exporter's textfile collector. You also need a cron/timer to
-run as frequently as you need metrics exported.
+plugs into node-exporter's textfile collector. It means you don't need to open up additional privileges and ports
+just for this information, rather, it now plugs into existing tooling from node-exporter.
+You also need a cron/timer to run as frequently as you need metrics exported. 5 minutes is fine.
  
  To that end you need to configure the --collector.textfile and --collector.textfile.directory options
 in the node-exporter configuration. You can then use the configuration files to
